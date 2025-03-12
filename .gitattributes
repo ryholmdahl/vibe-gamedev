@@ -1,3 +1,2 @@
 *.meta linguist-generated=true
-LICENSE.meta binary
-LICENSE.meta linguist-documentation=true 
+LICENSE.meta linguist-vendored=true 
