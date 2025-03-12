@@ -31,4 +31,8 @@ You can edit the contents of a scene or the properties of a GameObject directly 
 - You can edit the properties of a Component by changing the values in that Component's "properties" array.
 - You can delete a GameObject by deleting its corresponding folder.
 
-You cannot create prefabs. When you need to instantiate multiple copies of the same GameObject, you should instead create an inactive GameObject in the scene and instantiate copies of that.
+Other important rules:
+- You cannot create prefabs. Instead, you should create an inactive GameObject in the scene and use that where you would use a prefab.
+- Don't modify the ID of existing JSON files. If you want to create an object with a new ID, you can create a new file and delete the old one.
+- Don't use nested quotation marks in a list of strings in JSON objects. For example, the array `["foo", "bar"]` should be serialized as "[foo,bar]".
+
