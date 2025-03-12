@@ -1,1 +1,3 @@
-*.meta linguist-generated=true 
+*.meta linguist-generated=true
+LICENSE.meta binary
+LICENSE.meta linguist-documentation=true 
