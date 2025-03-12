@@ -1,9 +1,9 @@
 # vibe-gamedev
 **Letting AI agents use the Unity editor.**
 
-`vibe-gamedev` is a Unity package that creates an interface between the Unity editor and AI agents, allowing end-to-end [vibe coding](https://en.wikipedia.org/wiki/Vibe_coding) for game development. It serializes GameObjects to JSON files that can be read and edited by agents, then deserializes those files back into updated GameObjects.
+https://github.com/user-attachments/assets/9eb40208-3338-491e-a550-aa45d132b94f
 
-TODO: video
+`vibe-gamedev` is a Unity package that creates an interface between the Unity editor and AI agents, allowing end-to-end [vibe coding](https://en.wikipedia.org/wiki/Vibe_coding) for game development. It serializes GameObjects to JSON files that can be read and edited by agents, then deserializes those files back into updated GameObjects.
 
 *This is very experimental!* It will probably break, and data loss is a possibility.
 
