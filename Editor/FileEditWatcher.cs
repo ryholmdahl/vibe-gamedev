@@ -8,7 +8,7 @@ namespace VibeGamedev
 {
     public class FileEditWatcher
     {
-        private const string JSON_QUEUE_PATH = "json_edit_queue.txt";
+        private const string JSON_QUEUE_PATH = "vgd_json_edit_queue.txt";
         private readonly HashSet<string> knownJsonFiles = new();
 
         private readonly string jsonQueuePath;
@@ -19,12 +19,12 @@ namespace VibeGamedev
         private readonly FileSystemWatcher jsonWatcher;
         private readonly FileSystemWatcher directoryWatcher;
         private bool paused = true;
+        private readonly object pausedLock = new();
         private int queueSize = 0;
-
 
         public FileEditWatcher(string rootDirectory)
         {
-            jsonQueuePath = Path.Combine(rootDirectory, JSON_QUEUE_PATH);
+            jsonQueuePath = JSON_QUEUE_PATH;
             if (File.Exists(jsonQueuePath))
             {
                 queueSize = File.ReadAllLines(jsonQueuePath).Where(line => line.Length > 0).Count();
@@ -81,12 +81,18 @@ namespace VibeGamedev
 
         public void Pause()
         {
-            paused = true;
+            lock (pausedLock)
+            {
+                paused = true;
+            }
         }
 
         public void Resume()
         {
-            paused = false;
+            lock (pausedLock)
+            {
+                paused = false;
+            }
         }
 
         public enum FileActionType
@@ -138,50 +144,69 @@ namespace VibeGamedev
 
         void OnJsonChanged(object sender, FileSystemEventArgs e)
         {
-            if (!paused)
+            lock (pausedLock)
             {
-                var now = DateTime.Now;
-                bool shouldProcess = false;
-                lock (lastProcessedTimes)
+                if (paused)
                 {
-                    if (!lastProcessedTimes.ContainsKey(e.FullPath) ||
-                        (now - lastProcessedTimes[e.FullPath]).TotalMilliseconds >= DEBOUNCE_MS)
-                    {
-                        shouldProcess = true;
-                        lastProcessedTimes[e.FullPath] = now;
-                    }
+                    return;
                 }
-                if (shouldProcess)
+            }
+            var now = DateTime.Now;
+            bool shouldProcess = false;
+            lock (lastProcessedTimes)
+            {
+                if (!lastProcessedTimes.ContainsKey(e.FullPath) ||
+                    (now - lastProcessedTimes[e.FullPath]).TotalMilliseconds >= DEBOUNCE_MS)
                 {
-                    string jsonContent = File.ReadAllText(e.FullPath).Replace("\n", "");
-                    lock (jsonQueuePath)
-                    {
-                        File.AppendAllText(jsonQueuePath, "e*" + e.FullPath + "*" + jsonContent + "\n");
-                        knownJsonFiles.Add(Path.GetFullPath(e.FullPath));
-                    }
-                    queueSize++;
-                    SettingsWindow.Log("JSON changed (queue size: " + queueSize + "): " + e.FullPath);
+                    shouldProcess = true;
+                    lastProcessedTimes[e.FullPath] = now;
                 }
+            }
+            if (shouldProcess)
+            {
+                string jsonContent = File.ReadAllText(e.FullPath).Replace("\n", "");
+                if (jsonContent == null || jsonContent == "" || !jsonContent.StartsWith("{"))
+                {
+                    return;
+                }
+                lock (jsonQueuePath)
+                {
+                    File.AppendAllText(jsonQueuePath, "e*" + e.FullPath + "*" + jsonContent + "\n");
+                    knownJsonFiles.Add(Path.GetFullPath(e.FullPath));
+                }
+                queueSize++;
+                SettingsWindow.Log("JSON changed (queue size: " + queueSize + "): " + e.FullPath);
             }
         }
 
         void OnJsonDeleted(object sender, FileSystemEventArgs e)
         {
-            if (!paused)
+            lock (pausedLock)
             {
-                lock (jsonQueuePath)
+                if (paused)
                 {
-                    File.AppendAllText(jsonQueuePath, "d*" + e.FullPath + "*\n");
-                    knownJsonFiles.Remove(Path.GetFullPath(e.FullPath));
-                    queueSize++;
+                    return;
                 }
-                SettingsWindow.Log("JSON deleted (queue size: " + queueSize + "): " + e.FullPath);
             }
+            lock (jsonQueuePath)
+            {
+                File.AppendAllText(jsonQueuePath, "d*" + e.FullPath + "*\n");
+                knownJsonFiles.Remove(Path.GetFullPath(e.FullPath));
+                queueSize++;
+            }
+            SettingsWindow.Log("JSON deleted (queue size: " + queueSize + "): " + e.FullPath);
         }
 
         void OnDirectoryDeleted(object sender, FileSystemEventArgs e)
         {
-            if (!paused)
+            lock (pausedLock)
+            {
+                if (paused)
+                {
+                    return;
+                }
+            }
+            lock (jsonQueuePath)
             {
                 foreach (string jsonFile in knownJsonFiles.Where(jsonFile => jsonFile.StartsWith(e.FullPath)))
                 {
@@ -191,16 +216,22 @@ namespace VibeGamedev
                         knownJsonFiles.Remove(Path.GetFullPath(jsonFile));
                         queueSize++;
                     }
-                    SettingsWindow.Log("JSON deleted (queue size: " + queueSize + "): " + jsonFile);
+                    SettingsWindow.Log("JSON deleted via directory deletion (queue size: " + queueSize + "): " + jsonFile);
                 }
             }
         }
 
         void OnDirectoryRenamed(object sender, RenamedEventArgs e)
         {
-            if (!paused)
+            lock (pausedLock)
             {
-                SettingsWindow.Log($"Directory renamed: {Path.GetFullPath(e.OldFullPath)} -> {Path.GetFullPath(e.FullPath)}");
+                if (paused)
+                {
+                    return;
+                }
+            }
+            lock (jsonQueuePath)
+            {
                 string[] oldJsonFiles = knownJsonFiles.Where(jsonFile => jsonFile.StartsWith(Path.GetFullPath(e.OldFullPath))).ToArray();
                 foreach (string jsonFile in oldJsonFiles)
                 {

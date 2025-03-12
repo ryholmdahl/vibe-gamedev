@@ -19,12 +19,14 @@ namespace VibeGamedev
             public string objectName;
             public string id;
             public bool isActive;
+            public string tag;
             public SerializedComponent[] components;
             public SerializedObject(GameObject go)
             {
                 objectName = go.name;
                 id = ChangeExecutor.ObjectToID(go);
                 isActive = go.activeSelf;
+                tag = go.tag;
                 components = go.GetComponents<Component>().Select(c => new SerializedComponent(c)).ToArray();
             }
 
@@ -55,17 +57,23 @@ namespace VibeGamedev
                     gameObject = new GameObject(objectName);
                     Undo.RegisterCreatedObjectUndo(gameObject, "Create " + gameObject.name);
                     SettingsWindow.Log("Created " + gameObject.name + " (" + id + ")");
+                    ChangeExecutor.SetID(gameObject, id);
                 }
-
+                Undo.RecordObject(gameObject, "Change properties of " + gameObject.name);
                 gameObject.name = objectName;
                 gameObject.SetActive(isActive);
+                if (!UnityEditorInternal.InternalEditorUtility.tags.Contains(tag))
+                {
+                    UnityEditorInternal.InternalEditorUtility.AddTag(tag);
+                }
+                gameObject.tag = tag;
                 if (ChangeExecutor.ObjectToID(gameObject) != id)
                 {
-                    throw new ArgumentException($"{gameObject.name}: Instance ID mismatch: {ChangeExecutor.ObjectToID(gameObject)} != {id}");
+                    throw new ArgumentException($"{gameObject.name}: Object mismatch: {ChangeExecutor.ObjectToID(gameObject)} != {id}. Please try reopening the scene.");
                 }
                 if (ChangeExecutor.IDToObject(id) != gameObject)
                 {
-                    throw new ArgumentException($"{gameObject.name}: Object mismatch: {ChangeExecutor.IDToObject(id).name} != {gameObject.name}");
+                    throw new ArgumentException($"{gameObject.name}: Object mismatch: {ChangeExecutor.IDToObject(id).name} != {gameObject.name}. Please try reopening the scene.");
                 }
                 return gameObject;
             }
@@ -164,6 +172,10 @@ namespace VibeGamedev
                 // have been created.
                 return () =>
                 {
+                    if (gameObject == null)
+                    {
+                        return;
+                    }
                     foreach (var serializedProperty in properties)
                     {
                         try
@@ -236,14 +248,22 @@ namespace VibeGamedev
                     throw new ArgumentException();
                 }
                 object parsedValue;
-                if (value == null)
+                if (value == null || (value == "" && fieldOrPropertyType != typeof(string)))
                 {
                     parsedValue = null;
                 }
                 else
                 {
-                    var parser = IValueParser.GetParser(fieldOrPropertyType);
-                    parsedValue = parser.Parse(value, fieldOrPropertyType);
+                    try
+                    {
+                        var parser = IValueParser.GetParser(fieldOrPropertyType);
+                        parsedValue = parser.Parse(value, fieldOrPropertyType);
+                    }
+                    // This can happen if the agent hallucinates a value for a property that exists but isn't supported.
+                    catch (NotImplementedException e)
+                    {
+                        throw new ArgumentException($"{baseComponent.name}: {propertyName}: {e.Message}");
+                    }
                 }
                 SetValue(parsedValue);
             }

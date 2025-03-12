@@ -44,7 +44,8 @@ namespace VibeGamedev
         public static void Pause()
         {
             isPaused = true;
-            jsonWatcher?.Pause();
+            jsonWatcher?.Dispose();
+            jsonWatcher = null;
             // Force re-serialization when unpaused
             hasCompletedInitialSerialization = false;
             EditorPrefs.SetBool(IS_PAUSED_PREF_KEY, isPaused);
@@ -87,13 +88,13 @@ namespace VibeGamedev
                     Directory.CreateDirectory(newPath);
                 }
                 jsonWatcher?.Dispose();
+                jsonWatcher = null;
                 if (serializationPath != null)
                 {
                     Directory.Delete(serializationPath, true);
                 }
                 EditorPrefs.SetString(DIRECTORY_PREF_KEY, newPath);
                 serializationPath = newPath;
-                jsonWatcher = new FileEditWatcher(serializationPath);
                 hasCompletedInitialSerialization = false;
                 SettingsWindow.Log("Set serialization path to " + newPath);
             }
@@ -126,7 +127,7 @@ namespace VibeGamedev
         /// <param name="scene">The scene to serialize.</param>
         private static void SerializeScene(UnityEngine.SceneManagement.Scene scene)
         {
-            jsonWatcher.Pause();
+            jsonWatcher?.Pause();
             string sceneName = scene.name;
             if (sceneName == "")
             {
@@ -235,6 +236,7 @@ namespace VibeGamedev
                 OnSceneOpened(EditorSceneManager.GetActiveScene(), OpenSceneMode.Single);
                 hasCompletedInitialSerialization = true;
             }
+            jsonWatcher ??= new FileEditWatcher(serializationPath);
             // Resume the watcher after any prior work has been completed, so we don't listen to changes made during serialization
             jsonWatcher.Resume();
             if (!jsonWatcher.IsQueueEmpty() && EditorWindow.focusedWindow != null)
@@ -295,6 +297,8 @@ namespace VibeGamedev
                         {
                             gameObject.transform.SetParent(null);
                         }
+                        // For some reason, tag gets unset; reset it here
+                        gameObject.tag = jsonObject.tag;
                         SerializeObject(gameObject, parentDirectory);
                     });
                     SettingsWindow.Log($"Edited {jsonObject.id}");
@@ -335,11 +339,8 @@ namespace VibeGamedev
 
         private static void OnEditorQuitting()
         {
-            if (jsonWatcher != null)
-            {
-                jsonWatcher.Dispose();
-                jsonWatcher = null;
-            }
+            jsonWatcher?.Dispose();
+            jsonWatcher = null;
         }
 
         public static string ObjectToID(GameObject gameObject)
@@ -382,6 +383,12 @@ namespace VibeGamedev
                 return idToGameObject[id];
             }
             throw new ArgumentException($"Could not find object for id: {id}");
+        }
+
+        public static void SetID(GameObject gameObject, string id)
+        {
+            gameObjectToId[gameObject] = id;
+            idToGameObject[id] = gameObject;
         }
 
         private static string IDToDesiredDirectoryName(string id)
