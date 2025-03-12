@@ -55,7 +55,6 @@ ExportedObj/
 *.sln.meta
 *.csproj.meta
 [Tt]emp.meta
-LICENSE.meta
 
 # Unity3D generated file on crash reports
 sysinfo.txt
