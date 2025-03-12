@@ -8,8 +8,9 @@ Each Unity GameObject in the current active scene has a corresponding folder in 
 ```
 {
     "objectName": the GameObject's name.
-    "id": a unique identifier for the GameObject. When one GameObject references another (e.g., in a component property), it will reference it by this id, not by name, as names are not unique.
+    "id": a unique identifier for the GameObject. When one GameObject references another (e.g., in a component property), it will reference it by this id, not by name, as names are not unique. An ID should consist of the names of the GameObject's lineages, separated by ->; i.e., "GRANDPARENT_NAME->PARENT_NAME->OBJECT_NAME".
     "isActive": a boolean indicating whether the GameObject is active in the scene.
+    "tag": the GameObject's string tag.
     "components": an array of JSON objects, each describing one Component of this GameObject.
 }
 ```
@@ -29,3 +30,5 @@ You can edit the contents of a scene or the properties of a GameObject directly 
 - You can add a new Component to a GameObject by adding a new entry to the "components" array of its `info.json` file.
 - You can edit the properties of a Component by changing the values in that Component's "properties" array.
 - You can delete a GameObject by deleting its corresponding folder.
+
+You cannot create prefabs. When you need to instantiate multiple copies of the same GameObject, you should instead create an inactive GameObject in the scene and instantiate copies of that.
