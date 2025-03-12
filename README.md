@@ -1,26 +1,33 @@
 # vibe-gamedev
-**Letting AI agents use the Unity editor.**
+**Let AI agents use the Unity editor.**
 
 `vibe-gamedev` is a Unity package that creates an interface between the Unity editor and AI agents, allowing end-to-end [vibe coding](https://en.wikipedia.org/wiki/Vibe_coding) for game development. It serializes GameObjects to JSON files that can be read and edited by agents, then deserializes those files back into updated GameObjects.
 
 TODO: video
 
-*This is highly experimental!* It will probably break, and data loss is a possibility.
+*This is very experimental!* It will probably break, and data loss is a possibility.
 
 ## Getting started
 ### Installing `vibe-gamedev`
 With your project open in the Unity editor, install the package:
 ```
-Window > Package Manager > + > Install package from git URL...
+Window > Package Manager > + > Install package from git URL... > https://github.com/ryholmdahl/vibe-gamedev.git
 ```
 `vibe-gamedev` will start when the editor rebuilds.
 
 ### Using an AI agent
-Whenever you open or save a scene in the Unity editor, `vibe-gamedev` serializes each object in the scene as a JSON file. By default, these JSON files are saved to a folder in your project called `VibeGamedev/`.
+Whenever you open or save a scene in the Unity editor, `vibe-gamedev` serializes each object in the scene as a JSON file. By default, these JSON files are saved to a folder in your project called `VibeGamedev/`. You will want to make sure your AI agent (Claude Desktop, Cursor, etc.) has access to this directory, as well as the directory containing your project's scripts.
 
-Your AI agent (Claude Desktop, Cursor, etc.) is then free to manipulate these JSON files — changing component properties, adding or removing components, adding or removing GameObjects. Each change will automatically trigger a corresponding change in the editor.
+Your agent is then free to manipulate these JSON files — changing component properties, adding or removing components, adding or removing GameObjects. Each change will automatically trigger a corresponding change in the editor.
 
 You will likely want to provide your AI agent with a rule describing how to use `vibe-gamedev`; you can find an example rule in `Samples~/agent-rule.mdc`.
+
+### Example agent commands
+
+Your AI agent should now be able to answer questions and perform tasks like:
+- "How many buttons are visible in the scene?"
+- "Add a new object to the scene that is rotated 90 degrees and has a BoxCollider2D with width and height 1."
+- "Double the movement speed of all objects with an Enemy component."
 
 ## Changing the behavior of `vibe-gamedev`
 ### Pausing, logs, and changing the serialization directory
