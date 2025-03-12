@@ -1,0 +1,31 @@
+---
+description: Understand and edit Unity scenes and GameObjects.
+globs: 
+alwaysApply: true
+---
+Each Unity GameObject in the current active scene has a corresponding folder in the project directory. By default, these live in a folder called `VibeGamedev`; however, the user may change that target, so you might need to look around. The folder for a GameObject contains an `info.json` file of the following format:
+
+```
+{
+    "objectName": the GameObject's name.
+    "id": a unique identifier for the GameObject. When one GameObject references another (e.g., in a component property), it will reference it by this id, not by name, as names are not unique.
+    "isActive": a boolean indicating whether the GameObject is active in the scene.
+    "components": an array of JSON objects, each describing one Component of this GameObject.
+}
+```
+
+The JSON object for a Component is structured like:
+```
+{
+    "componentName": the name of the Component (which is also its class). Each GameObject can only have a single instance of a Component with a particular name.
+    "properties": a list of {"propertyName": string, "value": string} objects, each representing one key-value pair in that Component's public properties.
+}
+```
+
+The folder also contains one subfolder for each child GameObject of the parent. Folder placement is the ground-truth for object hierarchy in the scene.
+
+You can edit the contents of a scene or the properties of a GameObject directly by editing these `info.json` files and moving folders. For example:
+- You can add a new GameObject to a scene by creating a new folder and `info.json` file in the top-level directory (if the object is a root object) or within another object's directory (if it should be a child of the other object).
+- You can add a new Component to a GameObject by adding a new entry to the "components" array of its `info.json` file.
+- You can edit the properties of a Component by changing the values in that Component's "properties" array.
+- You can delete a GameObject by deleting its corresponding folder.

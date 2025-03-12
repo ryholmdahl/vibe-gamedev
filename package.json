@@ -1,0 +1,17 @@
+{
+    "name": "dog.holm.vibe-gamedev",
+    "version": "0.0.1",
+    "description": "An AI agent interface for the Unity editor.",
+    "displayName": "vibe-gamedev",
+    "author": {
+        "name": "Ryan Holmdahl",
+        "email": "ryholmdahl@gmail.com",
+        "url": "https://holm.dog"
+    },
+    "keywords": [
+        "ai",
+        "agent",
+        "mcp"
+    ],
+    "license": "MIT"
+}
