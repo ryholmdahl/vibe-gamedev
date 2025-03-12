@@ -52,3 +52,5 @@ I did experiment with building an MCP server similar to [Arodroid's](https://git
 - [ ] Does not currently support Prefabs. `.prefab` files behave quite differently from GameObjects in an active scene. Of course, if you're vibe coding, who cares about reusability?
 - [ ] Only the active scene is serialized/deserialized, so your agent can only "see" and manipulate the active scene.
 - [ ] I am not a Unity master. There are probably dumb assumptions made in here about how GameObjects or Components work. Please open a PR when you find them!
+- [ ] The deserialization is not robust to the agent making formatting mistakes (e.g., surrounding the strings within a list of strings with escaped quotation marks). These mistakes just get ignored and the property is not deserialized.
+
