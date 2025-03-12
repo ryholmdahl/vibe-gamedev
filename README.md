@@ -1,5 +1,5 @@
 # vibe-gamedev
-**Letting AI agents use the Unity editor.**
+**A tool for vibecoding in Unity.**
 
 https://github.com/user-attachments/assets/9eb40208-3338-491e-a550-aa45d132b94f
 
@@ -42,10 +42,10 @@ By default, `vibe-gamedev` will try to serialize all of the component properties
 ## Why JSON files instead of MCP?
 The [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP) is a standard for creating tools that AI agents can interact with. An MCP tool consists of a server that the agent can use to gather information and make changes to external systems. `vibe-gamedev` does not use MCP.
 
-I did experiment with building an MCP server similar to [Arodroid's](https://github.com/Arodoid/UnityMCP/tree/main/UnityMCPPlugin), but opted to use JSON serialization for a few reasons:
+I did experiment with building an MCP server similar to [Arodroid's](https://github.com/Arodoid/UnityMCP/tree/main), but opted to use JSON serialization for a few reasons:
 
 1. I did not like having to run an MCP server in parallel to the Unity editor. Ideally, `vibe-gamedev` would run with no extra processes or effort.
-2. The agent I experimented with (Claude 3.7 Sonnet) was quite competent working with file systems, already having tools like `grep` to quickly understand the scene. Using a new server that the model has no prior training with seemed riskier.
+2. The agent I experimented with (Claude 3.7 Sonnet) was quite competent working with file systems, already having tools like `grep` to quickly understand the scene. Introducing a new tool with which the model has no prior training seemed riskier.
 3. Designing the server API felt challenging. For example, it wasn't clear how to let the agent learn about the scene: dumping the entire serialization at once would flood the model context window with excess info, while allowing more specificity seemed like rolling my own query language. I decided I'd keep things familiar and open-ended by using the file system.
 
 ## Current limitations
