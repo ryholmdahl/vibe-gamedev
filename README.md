@@ -44,7 +44,7 @@ By default, `vibe-gamedev` will try to serialize all of the component properties
 ## Why JSON files instead of MCP?
 The [Model Context Protocol](https://modelcontextprotocol.io/introduction) (MCP) is a standard for creating tools that AI agents can interact with. An MCP tool consists of a server that the agent can use to gather information and make changes to external systems. `vibe-gamedev` does not use MCP.
 
-I did experiment with building an MCP server similar to [Arodroid's](https://github.com/Arodoid/UnityMCP/tree/main), but opted to use JSON serialization for a few reasons:
+I did experiment with building an MCP server similar to [Arodoid's](https://github.com/Arodoid/UnityMCP/tree/main), but opted to use JSON serialization for a few reasons:
 
 1. I did not like having to run an MCP server in parallel to the Unity editor. Ideally, `vibe-gamedev` would run with no extra processes or effort.
 2. The agent I experimented with (Claude 3.7 Sonnet) was quite competent working with file systems, already having tools like `grep` to quickly understand the scene. Introducing a new tool with which the model has no prior training seemed riskier.
